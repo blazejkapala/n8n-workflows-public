@@ -1,0 +1,406 @@
+{
+  "name": "Personal Assistent Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Masz zadanie rozpoznać intencję użytkownika na podstawie podanego tekstu.  \nDostępne są trzy opcje odpowiedzi:\n- \"sprawdź kalendarz\" – gdy użytkownik chce sprawdzić lub zobaczyć kalendarz, sprawdzić wydarzenia, spotkania itp.\n- \"utwórz wydarzenie\" – gdy użytkownik chce utworzyć, dodać lub zaplanować nowe wydarzenie.\n- \"nieznana akcja\" – gdy intencja nie jest jasna lub nie pasuje do powyższych opcji.\n\nPrzykłady:\n\nUżytkownik: \"Co mam zaplanowane na jutro?\"\nIntencja: sprawdź kalendarz\n\nUżytkownik: \"Zaplanuj spotkanie z Janem jutro o 10\"\nIntencja: utwórz wydarzenie\n\nUżytkownik: \"Jaka będzie jutro pogoda?\"\nIntencja: nieznana akcja\n\nTeraz oceń poniższe zdanie:\n\nUżytkownik: \"{{ $json.message.text }}\"\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        -220,
+        -910
+      ],
+      "id": "82775106-02a9-42a2-82de-152431449912",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -132,
+        -690
+      ],
+      "id": "5fe6521b-90de-4235-bb49-18aea29a7821",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "f7fa8SO4FZqRR0rk",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.text }}",
+                    "rightValue": "Intencja: utwórz wydarzenie",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "9c641949-ac5c-4ec3-b15b-6062e9e2b362"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Utwórz wydarzenie"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a4cdb3a2-5ec1-4c9e-b117-8c54ba50bd0b",
+                    "leftValue": "={{ $json.text }}",
+                    "rightValue": "Intencja: sprawdź kalendarz",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Sprawdź kalendarz"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "03f5ba93-bc60-4a32-baf4-36ab84b55cff",
+                    "leftValue": "={{ $json.text }}",
+                    "rightValue": "Intencja: nieznana akcja",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Nieznana akcja"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        156,
+        -910
+      ],
+      "id": "743e6554-ae08-4d60-865b-cbcd896e9eb4",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Wyciągnij szczegóły wydarzenia z tekstu:\n{{ $('Telegram Trigger').item.json.message.text }}\nDziś jest: {{ $now.format('yyyy-LL-dd') }}\n\nPodaj wynik w formacie JSON jak poniżej:\n\n{\n  \"title\": \"<tytuł wydarzenia>\",\n  \"date\": \"<data wydarzenia w formacie YYYY-MM-DD>\",\n  \"time\": \"<godzina wydarzenia w formacie HH:mm>\"\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        376,
+        -1160
+      ],
+      "id": "2f617590-6cbb-447b-84ed-d04a129adce6",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        -940
+      ],
+      "id": "3386d4d7-1e05-48ab-886e-42ce115a5050",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "f7fa8SO4FZqRR0rk",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Parsowanie tekstu JSON\nconst inputText = $json.text;\nconst cleanJson = inputText.replace(/```json|```/g, '').trim();\nconst eventDetails = JSON.parse(cleanJson);\n\n// 2. Przygotowanie daty i godziny\nconst date = eventDetails.date; // \"2025-04-25\"\nconst time = eventDetails.time; // \"12:00\"\nconst title = eventDetails.title;\n\n// 3. Tworzenie obiektu Date start\nconst startDate = new Date(`${date}T${time}:00+02:00`);\n\n// 4. Tworzenie obiektu Date end (+1 godzina)\nconst endDate = new Date(startDate.getTime() + 60 * 60 * 1000);\n\n// 5. Zwrócenie w formacie ISO\nreturn {\n  startDateTime: startDate.toISOString(),\n  endDateTime: endDate.toISOString(),\n  title: title\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        -1060
+      ],
+      "id": "5ce24ce5-16b2-4e8b-8682-348bed965dd0",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "blazej@kapala.com.pl",
+          "mode": "list",
+          "cachedResultName": "blazej@kapala.com.pl"
+        },
+        "start": "={{ $json.startDateTime }}",
+        "end": "={{ $json.endDateTime }}",
+        "additionalFields": {
+          "summary": "={{ $json.title }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        972,
+        -1060
+      ],
+      "id": "db01e1e3-0c29-43e6-96e4-e28d955626a5",
+      "name": "Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "rnvQ4ILllrgNZKKs",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -440,
+        -910
+      ],
+      "id": "f89775de-5190-4095-889b-178a0790f850",
+      "name": "Telegram Trigger",
+      "webhookId": "a870add4-346e-4dc1-80fd-8da8b65525f2",
+      "credentials": {
+        "telegramApi": {
+          "id": "E8JhkHzas8OdlTNS",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Napisz to inaczej",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        454,
+        -760
+      ],
+      "id": "4e9d9be0-909c-4337-8af5-05b10ca5d90a",
+      "name": "Telegram",
+      "webhookId": "004ff1c8-47be-4679-88cb-85cc3796822f",
+      "credentials": {
+        "telegramApi": {
+          "id": "E8JhkHzas8OdlTNS",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Utworzyłem wpis w kalendarzu",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1192,
+        -1060
+      ],
+      "id": "10b27d4d-e037-4672-9853-6a06ee5e46b8",
+      "name": "Telegram1",
+      "webhookId": "c700311c-7f1c-4c2d-954d-52b60a4c87bf",
+      "credentials": {
+        "telegramApi": {
+          "id": "E8JhkHzas8OdlTNS",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 Porozmawiaj z kalendarzem przez Telegrama\n\n**Ten workflow integruje Telegram, OpenAI i Google Calendar w celu reagowania na wiadomości i wykonywania określonych działań:**\n\n1. **Telegram Trigger** – reaguje na wiadomość otrzymaną na czacie Telegrama.\n\n2. **Basic LLM Chain + OpenAI Chat Model** – wiadomość jest przetwarzana przez model językowy OpenAI (np. GPT), aby rozpoznać intencję użytkownika.\n\n3. **Switch (mode: Rules)** – rozgałęzia przepływ na podstawie rozpoznanej intencji:\n\n   - **„Utwórz wydarzenie”** – przekierowuje dane do kolejnego modelu LLM oraz:\n     - przekształca dane w formacie wymaganym przez Google Calendar (`Code` node),\n     - tworzy wydarzenie (`Google Calendar`),\n     - wysyła potwierdzenie przez Telegram (`Telegram1`).\n\n   - **„Sprawdź kalendarz” lub inne znane komendy** – *(miejsce na rozwinięcie)*\n\n   - **„Nieznana akcja”** – wysyła wiadomość z informacją o nieznanym poleceniu (`Telegram`).\n",
+        "height": 460,
+        "width": 680
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -480,
+        -1420
+      ],
+      "typeVersion": 1,
+      "id": "3ef615d9-f5e5-45ce-bd75-6997fef4a339",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar": {
+      "main": [
+        [
+          {
+            "node": "Telegram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "af71dd9f-4c4a-4b43-8cfd-2c5462923220",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "684bad3be9caedd73d03aab01f0148d107f09965d3d4d67f1019826eeec6d9c1"
+  },
+  "id": "vkesXggsCulSPkQS",
+  "tags": []
+}
