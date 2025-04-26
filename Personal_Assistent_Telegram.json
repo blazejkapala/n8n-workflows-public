@@ -4,13 +4,13 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Masz zadanie rozpoznać intencję użytkownika na podstawie podanego tekstu.  \nDostępne są trzy opcje odpowiedzi:\n- \"sprawdź kalendarz\" – gdy użytkownik chce sprawdzić lub zobaczyć kalendarz, sprawdzić wydarzenia, spotkania itp.\n- \"utwórz wydarzenie\" – gdy użytkownik chce utworzyć, dodać lub zaplanować nowe wydarzenie.\n- \"nieznana akcja\" – gdy intencja nie jest jasna lub nie pasuje do powyższych opcji.\n\nPrzykłady:\n\nUżytkownik: \"Co mam zaplanowane na jutro?\"\nIntencja: sprawdź kalendarz\n\nUżytkownik: \"Zaplanuj spotkanie z Janem jutro o 10\"\nIntencja: utwórz wydarzenie\n\nUżytkownik: \"Jaka będzie jutro pogoda?\"\nIntencja: nieznana akcja\n\nTeraz oceń poniższe zdanie:\n\nUżytkownik: \"{{ $json.message.text }}\"\n"
+        "text": "=Twoje zadanie to rozpoznanie intencji użytkownika na podstawie podanego tekstu.\n\nMasz do wyboru trzy możliwe odpowiedzi:\n- \"sprawdź kalendarz\" — jeśli użytkownik chce sprawdzić, zobaczyć, zapytać o kalendarz, wydarzenia, spotkania lub terminy.\n- \"utwórz wydarzenie\" — jeśli użytkownik chce zaplanować, utworzyć, dodać nowe wydarzenie lub umówić spotkanie.\n- \"nieznana akcja\" — jeśli intencja użytkownika nie jest jasna albo nie pasuje do żadnej z powyższych kategorii.\n\nPrzykłady:\n\nUżytkownik: \"Co mam zaplanowane na jutro?\"\nOdpowiedź: sprawdź kalendarz\n\nUżytkownik: \"Zaplanuj spotkanie z Janem jutro o 10\"\nOdpowiedź: utwórz wydarzenie\n\nUżytkownik: \"Jaka będzie jutro pogoda?\"\nOdpowiedź: nieznana akcja\n\nZasady:\n- Wybierz tylko jedną z trzech podanych odpowiedzi.\n- Nie dodawaj żadnych dodatkowych wyjaśnień ani komentarzy.\n- Jeśli treść użytkownika jest pusta lub nie dotyczy kalendarza/wydarzeń, wybierz \"nieznana akcja\".\n\nTeraz oceń poniższe zdanie:\n\nUżytkownik: \"{{ $json.message.text }}\"\nOdpowiedź:\n"
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.6,
       "position": [
-        -220,
-        -910
+        560,
+        -1080
       ],
       "id": "82775106-02a9-42a2-82de-152431449912",
       "name": "Basic LLM Chain"
@@ -27,8 +27,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.2,
       "position": [
-        -132,
-        -690
+        648,
+        -860
       ],
       "id": "5fe6521b-90de-4235-bb49-18aea29a7821",
       "name": "OpenAI Chat Model",
@@ -53,8 +53,8 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.text }}",
-                    "rightValue": "Intencja: utwórz wydarzenie",
+                    "leftValue": "={{ $('Basic LLM Chain').item.json.text }}",
+                    "rightValue": "utwórz wydarzenie",
                     "operator": {
                       "type": "string",
                       "operation": "equals"
@@ -78,8 +78,8 @@
                 "conditions": [
                   {
                     "id": "a4cdb3a2-5ec1-4c9e-b117-8c54ba50bd0b",
-                    "leftValue": "={{ $json.text }}",
-                    "rightValue": "Intencja: sprawdź kalendarz",
+                    "leftValue": "={{ $('Basic LLM Chain').item.json.text }}",
+                    "rightValue": "sprawdź kalendarz",
                     "operator": {
                       "type": "string",
                       "operation": "equals",
@@ -103,8 +103,8 @@
                 "conditions": [
                   {
                     "id": "03f5ba93-bc60-4a32-baf4-36ab84b55cff",
-                    "leftValue": "={{ $json.text }}",
-                    "rightValue": "Intencja: nieznana akcja",
+                    "leftValue": "={{ $('Basic LLM Chain').item.json.text }}",
+                    "rightValue": "nieznana akcja",
                     "operator": {
                       "type": "string",
                       "operation": "equals",
@@ -124,8 +124,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        156,
-        -910
+        936,
+        -1080
       ],
       "id": "743e6554-ae08-4d60-865b-cbcd896e9eb4",
       "name": "Switch"
@@ -133,13 +133,13 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Wyciągnij szczegóły wydarzenia z tekstu:\n{{ $('Telegram Trigger').item.json.message.text }}\nDziś jest: {{ $now.format('yyyy-LL-dd') }}\n\nPodaj wynik w formacie JSON jak poniżej:\n\n{\n  \"title\": \"<tytuł wydarzenia>\",\n  \"date\": \"<data wydarzenia w formacie YYYY-MM-DD>\",\n  \"time\": \"<godzina wydarzenia w formacie HH:mm>\"\n}\n"
+        "text": "=Na podstawie poniższego tekstu wyciągnij szczegóły dotyczące wydarzenia.\n\nTekst użytkownika:\n{{ $('Telegram Trigger').first().json.message.text || $('Code3').first().json.message.text }}\n\nDzisiejsza data: {{ $now.format('yyyy-LL-dd') }}\n\nTwoje zadanie:\n- Rozpoznaj tytuł wydarzenia (może to być np. \"spotkanie z Janem\", \"kolacja z klientem\", itp.).\n- Rozpoznaj datę wydarzenia.\n  - Jeśli użytkownik poda np. \"jutro\", \"w poniedziałek\" — przelicz to na pełną datę w formacie `YYYY-MM-DD`, używając dzisiejszej daty jako punktu odniesienia.\n- Rozpoznaj godzinę wydarzenia.\n  - Jeśli użytkownik poda godzinę (\"o 10\", \"o 18:30\"), zapisz ją w formacie `HH:mm`.\n\nZwróć odpowiedź wyłącznie w formacie JSON dokładnie takim jak poniżej:\n\n```json\n{\n  \"title\": \"<tytuł wydarzenia>\",\n  \"date\": \"<data wydarzenia w formacie YYYY-MM-DD>\",\n  \"time\": \"<godzina wydarzenia w formacie HH:mm>\"\n}\n"
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.6,
       "position": [
-        376,
-        -1160
+        1156,
+        -1580
       ],
       "id": "2f617590-6cbb-447b-84ed-d04a129adce6",
       "name": "Basic LLM Chain1"
@@ -156,8 +156,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.2,
       "position": [
-        464,
-        -940
+        1244,
+        -1360
       ],
       "id": "3386d4d7-1e05-48ab-886e-42ce115a5050",
       "name": "OpenAI Chat Model1",
@@ -175,8 +175,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        752,
-        -1060
+        1532,
+        -1480
       ],
       "id": "5ce24ce5-16b2-4e8b-8682-348bed965dd0",
       "name": "Code"
@@ -198,8 +198,8 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        972,
-        -1060
+        1752,
+        -1480
       ],
       "id": "db01e1e3-0c29-43e6-96e4-e28d955626a5",
       "name": "Google Calendar",
@@ -220,8 +220,8 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.2,
       "position": [
-        -440,
-        -910
+        -980,
+        -1280
       ],
       "id": "f89775de-5190-4095-889b-178a0790f850",
       "name": "Telegram Trigger",
@@ -242,8 +242,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        454,
-        -760
+        1234,
+        -780
       ],
       "id": "4e9d9be0-909c-4337-8af5-05b10ca5d90a",
       "name": "Telegram",
@@ -258,14 +258,14 @@
     {
       "parameters": {
         "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
-        "text": "Utworzyłem wpis w kalendarzu",
+        "text": "={{ $json.text }}",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1192,
-        -1060
+        2426,
+        -1480
       ],
       "id": "10b27d4d-e037-4672-9853-6a06ee5e46b8",
       "name": "Telegram1",
@@ -285,12 +285,361 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -480,
-        -1420
+        -880,
+        -2000
       ],
       "typeVersion": 1,
       "id": "3ef615d9-f5e5-45ce-bd75-6997fef4a339",
       "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "eead082d-e2b4-404f-a563-d78fd822c009",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/start",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        340,
+        -1280
+      ],
+      "id": "daf8b097-026f-43b2-ba40-df15645ec5c6",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "Dzień dobry - co mogę dla Ciebie zrobić",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        638,
+        -1430
+      ],
+      "id": "64677cbe-4149-4f8a-98a2-c5b7c9277e8a",
+      "name": "Telegram2",
+      "webhookId": "4ea0d095-d286-439c-a30b-55fbfd53f9b3",
+      "credentials": {
+        "telegramApi": {
+          "id": "E8JhkHzas8OdlTNS",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Na podstawie poniższego tekstu ustal, o jaki dzień lub zakres dni chodzi.  \nWydobądź informację o dacie lub zakresie dat z treści wiadomości użytkownika.\n\nTekst użytkownika:\n{{ $('Telegram Trigger').first().json.message.text || $('Code3').first().json.message.text }}\n\nDzisiejsza data: {{ $now.format('yyyy-LL-dd') }}\n\nTwoje zadanie:\n- Jeśli użytkownik poda pojedynczy dzień (np. \"poniedziałek\", \"jutro\"), ustal konkretną datę.\n- Jeśli użytkownik poda zakres dni (np. \"przyszły tydzień\", \"od środy do piątku\", \"cały weekend\"), ustal pełny zakres:\n  - \"dayStart\" powinien wskazywać początek pierwszego dnia o godzinie 00:00:00.000\n  - \"dayEnd\" powinien wskazywać koniec ostatniego dnia o godzinie 23:59:59.999\n- Jeśli użytkownik nie poda żadnych informacji o dacie, przyjmij dzisiejszy dzień jako dzień wyszukiwania.\n\nWszystkie daty i czasy muszą uwzględniać odpowiednią strefę czasową i być zapisane w pełnym formacie, jak w przykładzie:\n`2025-04-26T05:57:40.654-04:00`\n\nFormat odpowiedzi:\n```json\n{\n  \"dayStart\": \"<data rozpoczęcia zakresu w pełnym formacie>\",\n  \"dayEnd\": \"<data zakończenia zakresu w pełnym formacie>\"\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        1156,
+        -1180
+      ],
+      "id": "a930e444-516a-493c-acdc-3a78613ebd2d",
+      "name": "Basic LLM Chain2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1244,
+        -960
+      ],
+      "id": "2a0ed9e9-157b-4e38-ae45-660504470142",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "f7fa8SO4FZqRR0rk",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "blazej@kapala.com.pl",
+          "mode": "list",
+          "cachedResultName": "blazej@kapala.com.pl"
+        },
+        "timeMin": "={{ $json.dayStart }}",
+        "timeMax": "={{ $json.dayEnd }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1752,
+        -1080
+      ],
+      "id": "418dc1e1-c1a9-4b1b-b882-960ba6807a1f",
+      "name": "Google Calendar1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "rnvQ4ILllrgNZKKs",
+          "name": "Google Calendar account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Na podstawie dostarczonych danych wypisz wszystkie zaplanowane spotkania w sposób czytelny.\n\nDane wejściowe:\n{{ $json.text }}\n\nTwoje zadanie:\n- Najpierw zawsze podaj, jakiego dnia lub jakiego zakresu dni dotyczą dane spotkania (np. \"Spotkania na 2025-04-28\" albo \"Spotkania od 2025-04-28 do 2025-04-30\").\n- Następnie:\n  - Jeśli są spotkania, wypisz każde spotkanie w następującym formacie:\n    - Nazwa spotkania\n    - Data rozpoczęcia\n    - Godzina rozpoczęcia\n    - Data zakończenia\n    - Godzina zakończenia\n  - Jeśli brak spotkań, napisz tylko: \"Brak zaplanowanych spotkań.\"\n- Nie dodawaj żadnych dodatkowych wyjaśnień ani komentarzy poza tym co wymagane.\n\nPrzykład odpowiedzi, gdy są spotkania:\n\nSpotkania na 2025-04-28:\n\n- Spotkanie: \"Obiad\"\n- Data rozpoczęcia: 2025-04-28\n- Godzina rozpoczęcia: 11:00\n- Data zakończenia: 2025-04-28\n- Godzina zakończenia: 12:00\n\nPrzykład odpowiedzi, gdy brak spotkań:\n\nSpotkania na 2025-04-28:\n\nBrak zaplanowanych spotkań.\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        2348,
+        -1080
+      ],
+      "id": "7bccaf38-bc41-4be1-896b-42595addc10c",
+      "name": "Basic LLM Chain3"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2436,
+        -860
+      ],
+      "id": "5d2c5a3c-c608-4281-833e-0fbfbdfeebc7",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "f7fa8SO4FZqRR0rk",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// INPUT: list of Google Calendar events\n// OUTPUT: single text summary for LLM\n\n// Jeśli brak danych, informuj o tym\nif (!items.length) {\n  return [\n    {\n      json: {\n        text: 'Brak danych do analizy.'\n      }\n    }\n  ];\n}\n\n// Jeśli są dane, przetwarzaj normalnie\nconst events = items.map(item => {\n  const data = item.json;\n  return `🗓️ Spotkanie: ${data.summary || 'Brak nazwy'}\nStart: ${data.start?.dateTime || 'Brak daty startu'}\nKoniec: ${data.end?.dateTime || 'Brak daty końca'}\nOrganizator: ${data.organizer?.email || 'Brak organizatora'}\nLink: ${data.htmlLink || 'Brak linku'}\n`;\n});\n\n// Połącz wszystko w jeden wielki tekst\nconst output = events.join('\\n---\\n');\n\nreturn [\n  {\n    json: {\n      text: output\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2050,
+        -1080
+      ],
+      "id": "34e7f593-a788-457e-a001-bead509cd232",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2724,
+        -1080
+      ],
+      "id": "88d2a7d7-e170-47a7-b099-75c984be754e",
+      "name": "Telegram3",
+      "webhookId": "c301264b-b50a-47ba-bf69-9f2acfabe4ed",
+      "credentials": {
+        "telegramApi": {
+          "id": "E8JhkHzas8OdlTNS",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// We assume there is only one item\nconst text = items[0].json.text;\n\n// Wyciągamy fragment pomiędzy ```json ... ```\nconst jsonMatch = text.match(/```json\\s*([\\s\\S]*?)\\s*```/);\n\nif (!jsonMatch || !jsonMatch[1]) {\n  throw new Error('Nie znaleziono poprawnego JSON w tekście.');\n}\n\n// Parsujemy tekst do JSON\nconst parsedJson = JSON.parse(jsonMatch[1]);\n\nreturn [\n  {\n    json: parsedJson\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1532,
+        -1080
+      ],
+      "id": "60ff5659-0ffa-40a2-91aa-bc09425acf03",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Utworzono spotkanie: {{ $json.summary }}\n🕒 Od: {{ $json.start.dateTime }}\n🕓 Do: {{ $json.end.dateTime }}\n🔗 {{ $json.htmlLink }}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        1972,
+        -1580
+      ],
+      "id": "3d334813-c402-4080-af84-fb5171821ab4",
+      "name": "Basic LLM Chain4"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2060,
+        -1360
+      ],
+      "id": "dbc23982-6cb8-4a3e-b9bd-d29c7138fbfd",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "f7fa8SO4FZqRR0rk",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c97ab4cc-a06a-4006-878a-a93852b51252",
+              "leftValue": "={{ $json.message.voice.mime_type }}",
+              "rightValue": "audio/ogg",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -760,
+        -1280
+      ],
+      "id": "1d4eb1b0-a844-4c02-8992-ec6a19cbe0fe",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7515242934:AAHYMLG154JOAIeDvsD4hsUQBq-XPaPbVJ4/getFile?file_id={{ $('Telegram Trigger').first().json.message.voice.file_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -540,
+        -1355
+      ],
+      "id": "de23e0f1-6e75-4e54-9bae-0d5ea846f5ab",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot7515242934:AAHYMLG154JOAIeDvsD4hsUQBq-XPaPbVJ4/{{ $json.result.file_path }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -320,
+        -1355
+      ],
+      "id": "a72cfd63-b10b-4e4b-907e-69eafef45725",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {
+          "language": "pl"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -100,
+        -1355
+      ],
+      "id": "bc54ec8f-69f2-4161-a327-d81d20411556",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "f7fa8SO4FZqRR0rk",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const transcription = items[0].json.text || 'Brak tekstu';\n\nreturn [\n  {\n    json: {\n      message: {\n        text: transcription\n      }\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        -1355
+      ],
+      "id": "ff13530c-e911-4d09-9639-b54213a9ae31",
+      "name": "Code3"
     }
   ],
   "pinData": {},
@@ -326,7 +675,13 @@
             "index": 0
           }
         ],
-        [],
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Telegram",
@@ -373,7 +728,7 @@
       "main": [
         [
           {
-            "node": "Basic LLM Chain",
+            "node": "If1",
             "type": "main",
             "index": 0
           }
@@ -384,7 +739,186 @@
       "main": [
         [
           {
+            "node": "Basic LLM Chain4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Telegram2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain2": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain3": {
+      "main": [
+        [
+          {
+            "node": "Telegram3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain4": {
+      "main": [
+        [
+          {
             "node": "Telegram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain4",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "If",
             "type": "main",
             "index": 0
           }
@@ -396,7 +930,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "af71dd9f-4c4a-4b43-8cfd-2c5462923220",
+  "versionId": "aa107657-5131-4656-9c54-8bfb9182e2d3",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "684bad3be9caedd73d03aab01f0148d107f09965d3d4d67f1019826eeec6d9c1"
