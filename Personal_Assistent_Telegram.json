@@ -579,7 +579,7 @@
     },
     {
       "parameters": {
-        "url": "=https://api.telegram.org/bot7515242934:AAHYMLG154JOAIeDvsD4hsUQBq-XPaPbVJ4/getFile?file_id={{ $('Telegram Trigger').first().json.message.voice.file_id }}",
+        "url": "=https://api.telegram.org/bot<API:token>/getFile?file_id={{ $('Telegram Trigger').first().json.message.voice.file_id }}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -593,7 +593,7 @@
     },
     {
       "parameters": {
-        "url": "=https://api.telegram.org/file/bot7515242934:AAHYMLG154JOAIeDvsD4hsUQBq-XPaPbVJ4/{{ $json.result.file_path }}",
+        "url": "=https://api.telegram.org/file/bot<API:token>/{{ $json.result.file_path }}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
