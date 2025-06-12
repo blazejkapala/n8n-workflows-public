@@ -1,0 +1,162 @@
+{
+  "name": "N8N Self-Database-Backup-to-GoogleDrive",
+  "nodes": [
+    {
+      "parameters": {
+        "command": "cd /home/node/.n8n && tar -czf backup/n8n-database-backup-$(date +%Y%m%d_%H%M%S).tar.gz database.sqlite && echo 'Backup created successfully' && ls -t backup/n8n-database-backup-*.tar.gz | head -1"
+      },
+      "name": "Create Database Backup",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        -780
+      ],
+      "id": "89e68803-7e6c-41b0-ae4c-ba6e414d3651"
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 3
+            }
+          ]
+        }
+      },
+      "name": "Daily Backup Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        -780
+      ],
+      "id": "2f1304ba-3628-4892-b9f7-33b76d6cb4cd"
+    },
+    {
+      "parameters": {
+        "fileSelector": "={{ '/home/node/.n8n/' + $json.stdout.split('\\n').pop().trim() }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1740,
+        -780
+      ],
+      "id": "0fe1b8b2-37db-43d7-996b-d99d4f90f7cd",
+      "name": "Read Backup File"
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_DRIVE_FOLDER_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_BACKUP_FOLDER_NAME"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1940,
+        -780
+      ],
+      "id": "aa32a83b-01c8-41f9-a048-d7e558d10a2c",
+      "name": "Upload to Google Drive"
+    },
+    {
+      "parameters": {
+        "command": "echo 'Cleaning up old backups...' && cd /home/node/.n8n/backup && ls -t n8n-database-backup-*.tar.gz | tail -n +101 | xargs -r rm && echo 'Cleanup completed. Kept 100 most recent backups.'"
+      },
+      "name": "Cleanup Old Backups",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2140,
+        -780
+      ],
+      "id": "05aabc11-c71e-4a04-aaee-24a7a0b55ff4"
+    },
+    {
+      "parameters": {
+        "content": "# N8N Self-Database-Backup-to-GoogleDrive\n\n🔄 Automatically creates daily backups of N8N database and uploads to Google Drive.\n🔄 Automatycznie tworzy codzienne kopie zapasowe bazy danych N8N i wysyła je do Google Drive.\n\n## Features / Funkcje\n- Daily automated backups at 3:00 AM / Codzienne kopie o 3:00\n- Automatic upload to Google Drive / Automatyczne wysyłanie do Google Drive  \n- Self-contained workflow / Samodzielny workflow",
+        "height": 300,
+        "width": 820
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1380,
+        -1120
+      ],
+      "typeVersion": 1,
+      "id": "c6da9423-490c-4a10-9429-dac4b63bd5ae",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily Backup Trigger": {
+      "main": [
+        [
+          {
+            "node": "Create Database Backup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Database Backup": {
+      "main": [
+        [
+          {
+            "node": "Read Backup File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Backup File": {
+      "main": [
+        [
+          {
+            "node": "Upload to Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Old Backups",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "40f387a2-d2da-47a4-bf2a-975956c11ae2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6a21a99d0a76c0160d347b1d33dc734fd146b5c100733abe9983f051cd2b04bb"
+  },
+  "id": "tQnK8Q1yvZYdpf3O",
+  "tags": []
+}
